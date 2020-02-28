@@ -1,0 +1,11 @@
+name: Continuous Integration
+# This workflow is triggered on pushes to the repository.
+on: [push]
+
+jobs:
+  build:
+    name: Test and Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: go test ./...
