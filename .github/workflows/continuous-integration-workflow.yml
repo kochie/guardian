@@ -8,4 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Test
-        run: go test ./...
+        run: make test
+      - name: build
+        run: make build
