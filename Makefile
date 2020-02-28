@@ -14,8 +14,13 @@ clean:
 install:
 	go install
 
-test:
-	go test ./...
+test-cli:
+	go test ./cmd/...
+
+test-api:
+	go test ./web-functions/...
+
+test: test-cli test-api
 
 pre-build:
 	mkdir -p bin
