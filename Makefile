@@ -17,12 +17,18 @@ install:
 test:
 	go test ./...
 
-build:
+pre-build:
 	mkdir -p bin
+
+build-cli: pre-build
+	go build -o ./bin/guardian
+
+build-api: pre-build
 	GOOS=linux GOARCH=amd64 go build -o ./bin/vpn/create ./${SAM_DIRECTORY}/vpn-create
 	GOOS=linux GOARCH=amd64 go build -o ./bin/vpn/list ./${SAM_DIRECTORY}/vpn-list
 	GOOS=linux GOARCH=amd64 go build -o ./bin/vpn/delete ./${SAM_DIRECTORY}/vpn-delete
-	go build -o ./bin/guardian
+
+build-all: pre-build build-api build-cli
 
 deploy: 
 	sam validate
