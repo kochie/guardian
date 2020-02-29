@@ -13,4 +13,4 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Validate template
-        run: aws cloudformation validate-template --template-body=file://./templates/vpn.yaml
+        run: aws cloudformation validate-template --template-body=file://./templates/vpn.yaml --region=ap-southeast-2
