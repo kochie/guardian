@@ -38,7 +38,7 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// vpnCmd.PersistentFlags().String("foo", "", "A help for foo")
+	vpnCmd.PersistentFlags().String("region", "", "Specify region to act upon")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

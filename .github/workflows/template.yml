@@ -1,0 +1,16 @@
+name: Validate Cloudformation Template
+# This workflow is triggered on pushes to the repository.
+on: [push]
+
+jobs:
+
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check out code into the directory
+        uses: actions/checkout@v2
+
+      - name: Validate template
+        run: cf validate-template --template-body=file://./templates/vpn.yaml

@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template
+Resources:
+  EC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      ImageId: "ami-0ff8a91507f77f867"
+      InstanceType: t2.micro
+      SecurityGroups:
+      - Ref: "InstanceSecurityGroup"
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            IPAddress=${ip_address}
+            sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+            sudo subscription-manager repos --enable codeready-builder-for-rhel-8-$(arch)-rpms
+            sudo yum copr enable jdoss/wireguard
+            sudo yum install wireguard-dkms wireguard-tools
+          - ip_address: !Ref "IPAddress"
+
+  InstanceSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: "VPN Security Group"
+      GroupDescription: "Enable SSH access via port 22"
+      SecurityGroupIngress:
+      - IpProtocol: "tcp"
+        FromPort: "22"
+        ToPort: "22"
+        CidrIp: "0.0.0.0/0"
+
+  IPAddress:
+    Type: "AWS::EC2::EIP"
+
+  IPAssoc:
+    Type: "AWS::EC2::EIPAssociation"
+    Properties:
+      InstanceId: !Ref "EC2Instance"
+      EIP: !Ref "IPAddress"
