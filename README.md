@@ -3,6 +3,8 @@
 # Guardian
 CLI Tools to manage servers and secure connections to them.
 
+![Architecture Diagram]("./guardian-architecture-diagram.svg")
+
 ## VPN
 Create and manage a fleet of WireGuard VPNs using the CLI.
 

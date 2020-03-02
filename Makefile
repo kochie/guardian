@@ -33,7 +33,13 @@ build-api: pre-build
 	GOOS=linux GOARCH=amd64 go build -o ./bin/vpn/list ./${SAM_DIRECTORY}/vpn-list
 	GOOS=linux GOARCH=amd64 go build -o ./bin/vpn/delete ./${SAM_DIRECTORY}/vpn-delete
 
-build-all: pre-build build-api build-cli
+build-auth: pre-build
+	GOOS=linux GOARCH=amd64 go build -o ./bin/cognito/challenge ./${SAM_DIRECTORY}/cognito-challenge
+	GOOS=linux GOARCH=amd64 go build -o ./bin/cognito/define ./${SAM_DIRECTORY}/cognito-define
+	GOOS=linux GOARCH=amd64 go build -o ./bin/cognito/verify ./${SAM_DIRECTORY}/cognito-verify
+	GOOS=linux GOARCH=amd64 go build -o ./bin/cognito/presignup ./${SAM_DIRECTORY}/cognito-presignup
+
+build-all: pre-build build-api build-cli build-auth
 
 deploy: 
 	sam validate

@@ -17,46 +17,35 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/kochie/guardian/utils"
+
 	"github.com/spf13/cobra"
-	"log"
 )
 
-// createCmd represents the create command
-var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Creates a WireGuard VPN",
-	Long:  `Creates a wireguard VPN in the region that you specify`,
+// logoutCmd represents the logout command
+var logoutCmd = &cobra.Command{
+	Use:   "logout",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		region, err := cmd.Flags().GetString("region")
-		if err != nil {
-			return
-		}
-		name, err := cmd.Flags().GetString("name")
-		if err != nil {
-			return
-		}
-		fmt.Println("create called", region, name)
-		//http.Post()
+		fmt.Println("logout called")
 	},
 }
 
 func init() {
-	vpnCmd.AddCommand(createCmd)
+	rootCmd.AddCommand(logoutCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// logoutCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	createCmd.Flags().StringP("name", "n", utils.GenerateRandomName(), "Name for the VPN")
-	createCmd.Flags().StringP("region", "r", "", "Region to locate the VPN")
-	err := createCmd.MarkFlagRequired("region")
-	if err != nil {
-		log.Panic("couldn't mark flag region as required")
-	}
+	// logoutCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -1,9 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  sam-app
-  
-  Sample SAM Template for sam-app
+  Guardian
+
+  Guardian is a key management and machine management service. This template has all the resources required to create
+  the serverless infrastructure.
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -11,6 +12,7 @@ Globals:
     Timeout: 5
 
 Resources:
+
   VpnCreateFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -27,6 +29,7 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
+
   VpnListFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -43,6 +46,7 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
+
   VpnDeleteFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -59,10 +63,57 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
-  # UserAccountPool:
-  #   Type: AWS::Cognito::UserPool
-  #   Properties:
 
+  CognitoChallenge:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: bin/cognito/
+      Handler: challenge
+      Runtime: go1.x
+      Tracing: Active
+
+  CognitoDefine:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: bin/cognito/
+      Handler: define
+      Runtime: go1.x
+      Tracing: Active
+
+  CognitoVerify:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: bin/cognito/
+      Handler: verify
+      Runtime: go1.x
+      Tracing: Active
+
+  CognitoPreSignUp:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: bin/cognito/
+      Handler: presignup
+      Runtime: go1.x
+      Tracing: Active
+
+  EmailService:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: "Guardian-Email-Configuration-Set"
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      LambdaConfig:
+        CreateAuthChallenge: !Ref CognitoChallenge
+        DefineAuthChallenge: !Ref CognitoDefine
+        PreSignUp: !Ref CognitoPreSignUp
+        VerifyAuthChallengeResponse: !Ref CognitoVerify
+      EmailConfiguration:
+        ConfigurationSet: !Ref EmailService
+        EmailSendingAccount: DEVELOPER
+        From: Test User <testuser@example.com>
+        SourceArn: arn:aws:ses:ap-southeast-2:457234467265:identity/guardian@kochie.io
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
