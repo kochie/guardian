@@ -16,7 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+	"github.com/kochie/guardian/config"
+	"github.com/kochie/guardian/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -32,7 +35,35 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("logout called")
+		//fmt.Println("logout called")
+		credentials, err := utils.RetrieveAuth()
+		if err != nil {panic(err)}
+
+		global, err := cmd.Flags().GetBool("global")
+		if err != nil {panic(err)}
+
+		cid := cognitoidentityprovider.New(config.GetDefaultSession())
+		cog := utils.NewCognitoHelper(cid)
+		if cog.IsTokenExpired() { cog.RefreshToken() }
+
+		forget, err := cmd.Flags().GetBool("forget")
+		if err != nil {panic(err)}
+
+		if forget {
+			_, err := cid.ForgetDevice(&cognitoidentityprovider.ForgetDeviceInput{
+				AccessToken: aws.String(credentials.AccessToken),
+				DeviceKey:   aws.String(credentials.DeviceKey),
+			})
+			if err != nil {panic(err)}
+		}
+
+		if global {
+			cid.GlobalSignOutRequest(&cognitoidentityprovider.GlobalSignOutInput{
+				AccessToken: aws.String(credentials.AccessToken),
+			})
+		}
+
+		if err := utils.RemoveAuth(); err != nil {panic(err)}
 	},
 }
 
@@ -43,7 +74,8 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// logoutCmd.PersistentFlags().String("foo", "", "A help for foo")
+	logoutCmd.PersistentFlags().Bool("forget", true, "forget device")
+	logoutCmd.PersistentFlags().Bool("global", false, "log out of all devices")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
