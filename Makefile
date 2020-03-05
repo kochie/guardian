@@ -5,6 +5,11 @@ REGION=ap-southeast-2
 
 .PHONY: deps clean build
 
+fmt:
+	gofmt -w .
+
+pre-commit: fmt
+
 deps:
 	go get -u ./...
 
@@ -38,6 +43,7 @@ build-auth: pre-build
 	GOOS=linux GOARCH=amd64 go build -o ./bin/cognito/define ./${SAM_DIRECTORY}/cognito-define
 	GOOS=linux GOARCH=amd64 go build -o ./bin/cognito/verify ./${SAM_DIRECTORY}/cognito-verify
 	GOOS=linux GOARCH=amd64 go build -o ./bin/cognito/presignup ./${SAM_DIRECTORY}/cognito-presignup
+	GOOS=linux GOARCH=amd64 go build -o ./bin/cognito/post_authentication ./${SAM_DIRECTORY}/cognito-post-authentication
 
 build-all: pre-build build-api build-cli build-auth
 

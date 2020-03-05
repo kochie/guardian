@@ -5,12 +5,12 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-func handler(events.CognitoEventUserPoolsPreSignupRequest) (events.CognitoEventUserPoolsPreSignupResponse, error) {
-	return events.CognitoEventUserPoolsPreSignupResponse{
-		AutoConfirmUser: true,
-		AutoVerifyEmail: true,
-		AutoVerifyPhone: false,
-	}, nil
+func handler(event events.CognitoEventUserPoolsPreSignup) (events.CognitoEventUserPoolsPreSignup, error) {
+	event.Response.AutoConfirmUser = true
+	event.Response.AutoVerifyEmail = true
+	event.Response.AutoVerifyPhone = false
+
+	return event, nil
 }
 
 func main() {

@@ -60,60 +60,128 @@ Resources:
           Properties:
             Path: /vpn
             Method: DELETE
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
-        Variables:
-          PARAM1: VALUE
 
-  CognitoChallenge:
+  UserPool:
+#    DependsOn:
+#      - EmailService
+    Type: AWS::Cognito::UserPool
+    Properties:
+#      LambdaConfig:
+#        CreateAuthChallenge: !Ref CognitoChallengeFunction
+#        DefineAuthChallenge: !Ref CognitoDefineFunction
+#        PreSignUp: !Ref CognitoPreSignUpFunction
+#        VerifyAuthChallengeResponse: !Ref CognitoVerifyFunction
+#      EmailConfiguration:
+#        ConfigurationSet: !Ref EmailService
+#        EmailSendingAccount: DEVELOPER
+#        From: Test User <testuser@example.com>
+#        SourceArn: arn:aws:ses:ap-southeast-2:457234467265:identity/guardian@kochie.io
+      UserPoolName: "Guardian_User_Pool"
+      DeviceConfiguration:
+        ChallengeRequiredOnNewDevice: false
+        DeviceOnlyRememberedOnUserPrompt: false
+
+  UserPoolTokenClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  CognitoChallengeFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: bin/cognito/
       Handler: challenge
       Runtime: go1.x
       Tracing: Active
+      Events:
+        CognitoCreateAuth:
+          Type: Cognito
+          Properties:
+            UserPool: !Ref UserPool
+            Trigger: CreateAuthChallenge
+      Environment:
+        Variables:
+          SES_FROM_ADDRESS: guardian@kochie.io
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+              Resource: "*"
 
-  CognitoDefine:
+  CognitoDefineFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: bin/cognito/
       Handler: define
       Runtime: go1.x
       Tracing: Active
+      Events:
+        CognitoDefine:
+          Type: Cognito
+          Properties:
+            UserPool: !Ref UserPool
+            Trigger: DefineAuthChallenge
 
-  CognitoVerify:
+  CognitoVerifyFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: bin/cognito/
       Handler: verify
       Runtime: go1.x
       Tracing: Active
+      Events:
+        CognitoVerify:
+          Type: Cognito
+          Properties:
+            UserPool: !Ref UserPool
+            Trigger: VerifyAuthChallengeResponse
 
-  CognitoPreSignUp:
+  CognitoPreSignUpFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: bin/cognito/
       Handler: presignup
       Runtime: go1.x
       Tracing: Active
+      Events:
+        CognitoPreSignUp:
+          Type: Cognito
+          Properties:
+            UserPool: !Ref UserPool
+            Trigger: PreSignUp
 
-  EmailService:
-    Type: AWS::SES::ConfigurationSet
+  CognitoPostAuthenticationFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      Name: "Guardian-Email-Configuration-Set"
+      CodeUri: bin/cognito/
+      Handler: post_authentication
+      Runtime: go1.x
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - sts:AssumeRole
+              Resource: "*"
+      Events:
+        CognitoPostAuthentication:
+          Type: Cognito
+          Properties:
+            UserPool: !Ref UserPool
+            Trigger: PostAuthentication
+#      Role: !GetAtt PostAuthenticationRole.Arn
 
-  UserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      LambdaConfig:
-        CreateAuthChallenge: !Ref CognitoChallenge
-        DefineAuthChallenge: !Ref CognitoDefine
-        PreSignUp: !Ref CognitoPreSignUp
-        VerifyAuthChallengeResponse: !Ref CognitoVerify
-      EmailConfiguration:
-        ConfigurationSet: !Ref EmailService
-        EmailSendingAccount: DEVELOPER
-        From: Test User <testuser@example.com>
-        SourceArn: arn:aws:ses:ap-southeast-2:457234467265:identity/guardian@kochie.io
+#  EmailService:
+#    Type: AWS::SES::ConfigurationSet
+#    Properties:
+#      Name: "Guardian-Email-Configuration-Set"
+
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

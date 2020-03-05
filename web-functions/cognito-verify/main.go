@@ -5,17 +5,16 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-func handler(request events.CognitoEventUserPoolsVerifyAuthChallengeRequest) (events.CognitoEventUserPoolsVerifyAuthChallengeResponse, error) {
-	expectedAnswer := request.PrivateChallengeParameters["secretLoginCode"]
+func handler(event events.CognitoEventUserPoolsVerifyAuthChallenge) (events.CognitoEventUserPoolsVerifyAuthChallenge, error) {
+	expectedAnswer := event.Request.PrivateChallengeParameters["secretLoginCode"]
+	answer := event.Request.ChallengeAnswer.(string)
 
-	response := events.CognitoEventUserPoolsVerifyAuthChallengeResponse{}
-
-	if request.ChallengeAnswer == expectedAnswer {
-		response.AnswerCorrect = true
+	if answer == expectedAnswer {
+		event.Response.AnswerCorrect = true
 	} else {
-		response.AnswerCorrect = false
+		event.Response.AnswerCorrect = false
 	}
-	return response, nil
+	return event, nil
 }
 
 func main() {
